@@ -25,6 +25,13 @@ class CaskmasterUpdateManager {
 
 		$this->update = simplexml_load_file($this->xml);
 
+		$currentVersion = (float) $_SERVER['app']->get("caskmaster.version");
+		$targetVersion =  (float) $this->update['target_version'];
+
+		if($currentVersion == $targetVersion) {
+			throw new \Exception("Current is same as target version.");
+		}
+
 	}
 
 	public function displayUpgradeSteps() {
@@ -84,6 +91,7 @@ class CaskmasterUpdateManager {
 
 				if(empty($to)) {
 					$mode = "file";
+					$this->checkoutBranch($from);
 				} else {
 					$mode = "config";
 				}
@@ -110,6 +118,57 @@ class CaskmasterUpdateManager {
 	    $ini += strlen($start);
 	    $len = strpos($string, $end, $ini) - $ini;
 	    return substr($string, $ini, $len);
+	}
+
+	private function checkoutBranch($branch) {
+		$repoLocation = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/repo';
+
+
+		$this->deleteResource($repoLocation);
+		
+		$repo = \Cz\Git\GitRepository::cloneRepository('https://github.com/loftyD/caskmaster2.git', $repoLocation);
+		if($repo->hasChanges()) {
+			if(!in_array($branch,$repo->getBranches())) {
+				throw new \Exception("Chosen branch is not recognised");
+			}
+
+			$repo->checkout($branch);
+		}
+
+		$loadGitIgnoreFiles = file($repoLocation.'/.gitignore');
+		foreach($loadGitIgnoreFiles as $eachFile) {
+			$eachFile = ltrim($eachFile,"/");
+			if(file_exists($repoLocation.'/'.$eachFile)) {
+				unlink($repoLocation.'/'.$eachFile);
+			}
+			if(is_dir($repoLocation.'/'.$eachFile)) {
+				$this->deleteResource($repoLocation.'/'.$eachFile);
+			}
+		}
+
+		return true;
+		
+	}
+
+	private function deleteResource($dir) {
+
+	    if (empty($dir)) { 
+    		return false;
+		}
+
+		if (is_dir($dir)) {
+    		$objects = scandir($dir);
+    		foreach ($objects as $object) {
+      			if ($object != "." && $object != "..") {
+        			if (filetype($dir."/".$object) == "dir") 
+           				$this->deleteResource($dir."/".$object); 
+        			else 
+        				unlink($dir."/".$object);
+      			}
+    		}
+    		reset($objects);
+    		rmdir($dir);
+  		}
 	}
 
 }

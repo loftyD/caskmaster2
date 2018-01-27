@@ -5,7 +5,7 @@
 		<description>Update your Caskmaster Config File</description>
 	</step>
 	<step id="2" last="true">
-		<command>GET LATEST @\components\Barrel@</command>
-		<description>Download new copy of \components\Barrel</description>
+		<command>CHECKOUT @master@</command>
+		<description>Update Your Caskmaster Instance</description>
 	</step>
 </caskmaster>
