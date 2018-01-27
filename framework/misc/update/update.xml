@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<caskmaster target_version="2.10">
+	<step id="1">
+		<command>UPDATE #caskmaster_version# TO #2.10#</command>
+		<description>Update your Caskmaster Config File</description>
+	</step>
+	<step id="2" last="true">
+		<command>GET LATEST @\components\Barrel@</command>
+		<description>Download new copy of \components\Barrel</description>
+	</step>
+</caskmaster>
