@@ -39,12 +39,21 @@ class CaskmasterUpdateManager {
 			throw new \Exception("target_version not defined.");
 		}
 
+		$runUpgrade = false;
+		if(!empty($_GET['run']) && $_GET['run'] == 'true') {
+			$runUpgrade = true;
+		}
 		$this->target_version = $this->update['target_version'];
 
 		$html = "";
 		$currentVersion = $_SERVER['app']->get("caskmaster.version");
 		$html = "<h2>Update Caskmaster From Version " . $currentVersion . " to " .$this->target_version . "</h2>";
-		$html .= $this->loopThroughSteps(true);
+		$html .= $this->loopThroughSteps($runUpgrade);
+		if(!$runUpgrade) {
+			$html .= "<p><a href=\"?run=true\" class=\"btn btn-warning btn-lg\">Run Upgrade</a></p>";
+		} else {
+			$html .= "<h2>Upgrade Complete</h2><p>You may need to execute any applicable SQL seperately.</p>";
+		}
 		return $html;
 	}
 
@@ -94,6 +103,7 @@ class CaskmasterUpdateManager {
 					$this->checkoutBranch($from);
 				} else {
 					$mode = "config";
+					$this->updateConfig($from,$to);
 				}
 			}
 		}
@@ -198,5 +208,31 @@ class CaskmasterUpdateManager {
         }
         $d->close();
     }
+
+    private function updateConfig($option,$value) {
+
+    	$configLocation = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/config/config.php';
+    	$replaceString = '$app->set("'. $option . '",';
+
+    	$file = file($configLocation);
+		$Lines = array();
+		foreach($file as $line) {
+			if($this->contains($replaceString,$line)) {
+				$replace = str_replace($_SERVER['app']->get($option), $value, $line);
+				$Lines[] = $replace;
+			} else {
+				$Lines[] = $line;
+			}
+		}
+
+		$NewContent = implode("", $Lines);
+
+		file_put_contents($configLocation, $NewContent);
+		return true;
+    }
+
+    private function contains($needle, $haystack) {
+    	return strpos($haystack, $needle) !== false;
+	}
 
 }

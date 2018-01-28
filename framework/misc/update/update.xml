@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <caskmaster target_version="2.10">
 	<step id="1">
-		<command>UPDATE #caskmaster_version# TO #2.10#</command>
-		<description>Update your Caskmaster Config File</description>
+		<command>UPDATE #caskmaster.version# TO #2.10#</command>
+		<description>Update Your Caskmaster Config File</description>
 	</step>
 	<step id="2" last="true">
 		<command>CHECKOUT @master@</command>
