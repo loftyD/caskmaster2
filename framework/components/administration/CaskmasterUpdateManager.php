@@ -13,24 +13,26 @@ class CaskmasterUpdateManager {
 	protected $update;
 	private   $target_version;
 
-	public function __construct() {
-		$this->xml = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/update.xml';
+	public function __construct($runChecks=true) {
+		if($runChecks) {
+			$this->xml = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/update.xml';
 
-		if(!file_exists($this->xml)) {
-			throw new HttpException("No update.xml found, this must reside in framework/misc/update/update.xml");
-		}
+			if(!file_exists($this->xml)) {
+				throw new HttpException("No update.xml found, this must reside in framework/misc/update/update.xml");
+			}
 
-		if(filesize($this->xml) == 0) {
-			throw new HttpException("update.xml found, but empty file detected.");
-		}
+			if(filesize($this->xml) == 0) {
+				throw new HttpException("update.xml found, but empty file detected.");
+			}
 
-		$this->update = simplexml_load_file($this->xml);
+			$this->update = simplexml_load_file($this->xml);
 
-		$currentVersion = (float) $_SERVER['app']->get("caskmaster.version");
-		$targetVersion =  (float) $this->update['target_version'];
+			$currentVersion = (float) $_SERVER['app']->get("caskmaster.version");
+			$targetVersion =  (float) $this->update['target_version'];
 
-		if($currentVersion == $targetVersion) {
-			throw new HttpException("It appears that your Caskmaster Version matches the target version as specified in update.xml");
+			if($currentVersion == $targetVersion) {
+				throw new HttpException("It appears that your Caskmaster Version matches the target version as specified in update.xml");
+			}
 		}
 
 	}
@@ -234,6 +236,25 @@ class CaskmasterUpdateManager {
 
     private function contains($needle, $haystack) {
     	return strpos($haystack, $needle) !== false;
+	}
+
+	public function fetchLatestUpdateXml($branch="master") {
+		$latestUpdateXml = "https://raw.githubusercontent.com/loftyd/caskmaster2/$branch/framework/misc/update/update.xml";
+		$ourUpdateXml = $configLocation = $_SERVER['DOCUMENT_ROOT'] . "/framework/misc/update/update.xml";
+
+		if(file_exists($latestUpdateXml)) {
+			try {
+				$contents = file_get_contents($latestUpdateXml);
+				file_put_contents($ourUpdateXml, $contents);
+				return true;
+			} catch(Exception $e) {
+				throw new HttpException("Cannot find latest update.xml");
+			}
+		} else {
+			return false;
+		}
+
+
 	}
 
 }

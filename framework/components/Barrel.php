@@ -4,24 +4,26 @@ namespace components;
 class Barrel {
 
 	public static function getLatestVersion() {
-		if(!in_array($_SERVER['app']->get("caskmaster.environment"),array("production"))) {
-
-			$url = "http://" . $_SERVER['SERVER_NAME'] . "/v";
-			$version = json_decode(file_get_contents($url));
-			return reset($version);
+		if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
+			$version = json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
 		} else {
-			if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
-				$version = json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
-				return reset($version);
-			}
 			$url = "http://getcaskmaster.com/v";
 			$version = json_decode(file_get_contents($url));
 			$_SERVER['app']->redis()->set("caskmaster_latest_version", json_encode($version) );
 			$_SERVER['app']->redis()->expire("caskmaster_latest_version", 3600);
-
-
-			return reset($version);
 		}
+
+		$latest = $version->version;
+		if($_SERVER['app']->get("caskmaster.version") < $latest) {
+			$updateManager = new \components\administration\CaskmasterUpdateManager(false);
+			if($updateManager->fetchLatestUpdateXml($latest) === false) {
+				return false;
+			}
+
+		}
+
+
+		return reset($version);
 	}
 
 	public static function returnLatestSessionData() {
