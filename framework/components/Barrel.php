@@ -81,7 +81,7 @@ class Barrel {
 			WHERE v_to <> ( 
 			SELECT version
 			FROM caskmaster_versions
-			WHERE latest_version =1 ) 
+			WHERE latest_version =1 AND version > :my ) 
 			AND v_from = :my";
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array(":my" => $my_version));
