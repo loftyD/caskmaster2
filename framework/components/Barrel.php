@@ -86,7 +86,7 @@ class Barrel {
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array(":my" => $my_version));
 			$stmt->setFetchMode(\PDO::FETCH_OBJ);
-			$result = $statement->fetch();
+			$result = $stmt->fetch();
 			if(empty($result)) {
 				return self::fetchLatestVersion();
 			}
