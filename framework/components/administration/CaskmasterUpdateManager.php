@@ -6,6 +6,7 @@
 namespace components\administration;
 set_time_limit(-1);
 use components\VarDumper;
+use components\exception\HttpException;
 class CaskmasterUpdateManager {
 
 	protected $xml;
@@ -16,11 +17,11 @@ class CaskmasterUpdateManager {
 		$this->xml = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/update.xml';
 
 		if(!file_exists($this->xml)) {
-			throw new \Exception("No update.xml found, this must reside in framework/misc/update/update.xml");
+			throw new HttpException("No update.xml found, this must reside in framework/misc/update/update.xml");
 		}
 
 		if(filesize($this->xml) == 0) {
-			throw new \Exception("update.xml found, but empty file detected");
+			throw new HttpException("update.xml found, but empty file detected.");
 		}
 
 		$this->update = simplexml_load_file($this->xml);
@@ -29,14 +30,14 @@ class CaskmasterUpdateManager {
 		$targetVersion =  (float) $this->update['target_version'];
 
 		if($currentVersion == $targetVersion) {
-			throw new \Exception("Current is same as target version.");
+			throw new HttpException("It appears that your Caskmaster Version matches the target version as specified in update.xml");
 		}
 
 	}
 
 	public function displayUpgradeSteps() {
 		if(empty($this->update['target_version'])) {
-			throw new \Exception("target_version not defined.");
+			throw new HttpException("XML Error: The property target_version is not defined.");
 		}
 
 		$runUpgrade = false;
@@ -52,7 +53,7 @@ class CaskmasterUpdateManager {
 		if(!$runUpgrade) {
 			$html .= "<p><a href=\"?run=true\" class=\"btn btn-warning btn-lg\">Run Upgrade</a></p>";
 		} else {
-			$html .= "<h2>Upgrade Complete</h2><p>You may need to execute any applicable SQL seperately.</p>";
+			$html .= "<h2>Upgrade Complete</h2><p>You may need to execute any applicable SQL separately.</p>";
 		}
 		return $html;
 	}
@@ -139,7 +140,7 @@ class CaskmasterUpdateManager {
 		$repo = \Cz\Git\GitRepository::cloneRepository('https://github.com/loftyD/caskmaster2.git', $repoLocation);
 		if($repo->hasChanges()) {
 			if(!in_array($branch,$repo->getBranches())) {
-				throw new \Exception("Chosen branch is not recognised");
+				throw new HttpException("The desired branch is not recognised. Please check the update.xml file.");
 			}
 
 			$repo->checkout($branch);

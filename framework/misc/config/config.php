@@ -12,8 +12,9 @@ $app = new Engine();
 	$app->set("db.user","root");
 	$app->set("db.password","admin");
 	$app->set("flight.log_errors", true);
+	$app->set("flight.views.path",$_SERVER['DOCUMENT_ROOT'] . "/framework/views");
 	$app->set("caskmaster.environment","development");
-	$app->set("caskmaster.version","2.00");
+	$app->set("caskmaster.version","2.10");
 	$app->set("redis.host","127.0.0.1");
 	$app->set("redis.port", 6379);
 
