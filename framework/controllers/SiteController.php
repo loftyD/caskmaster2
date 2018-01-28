@@ -64,7 +64,12 @@ class SiteController extends Controller {
 		if($_SERVER['app']->get("caskmaster.environment") != "production") {
 			echo json_encode(array("version" => number_format(mt_rand($_SERVER['app']->get("caskmaster.version")/2*10,25)/10,2) ));
 		} else {
-			$this->router->notFound();
+			if($_SERVER['SERVER_NAME'] == "getcaskmaster.com") {
+				echo json_encode(array("version" => \components\Barrel::fetchLatestVersion()));
+
+			} else {
+				echo \components\Barrel::getLatestVersion();
+			}
 		}
 	}
 }
