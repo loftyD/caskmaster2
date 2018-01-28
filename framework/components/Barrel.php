@@ -8,11 +8,17 @@ class Barrel {
 
 			$url = "http://" . $_SERVER['SERVER_NAME'] . "/v";
 			$version = json_decode(file_get_contents($url));
-
 			return reset($version);
 		} else {
+			if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
+				return json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
+			}
 			$url = "http://getcaskmaster.com/v";
 			$version = json_decode(file_get_contents($url));
+			$_SERVER['app']->redis()->set("caskmaster_latest_version", json_encode($version) );
+			$_SERVER['app']->redis()->expire("caskmaster_latest_version", 3600);
+
+
 			return reset($version);
 		}
 	}
