@@ -16,6 +16,7 @@ class Barrel {
 		$latest = $version->version;
 		if($_SERVER['app']->get("caskmaster.version") < $latest) {
 			$updateManager = new \components\administration\CaskmasterUpdateManager(false);
+			clearstatcache();
 			if($updateManager->fetchLatestUpdateXml($latest) === false) {
 				return false;
 			}

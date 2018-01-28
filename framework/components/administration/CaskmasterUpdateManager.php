@@ -15,6 +15,9 @@ class CaskmasterUpdateManager {
 
 	public function __construct($runChecks=true) {
 		if($runChecks) {
+
+			$version = \components\Barrel::getLatestVersion();
+
 			$this->xml = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/update.xml';
 
 			if(!file_exists($this->xml)) {
@@ -241,8 +244,8 @@ class CaskmasterUpdateManager {
 	public function fetchLatestUpdateXml($branch="master") {
 		$latestUpdateXml = "https://raw.githubusercontent.com/loftyd/caskmaster2/$branch/framework/misc/update/update.xml";
 		$ourUpdateXml = $configLocation = $_SERVER['DOCUMENT_ROOT'] . "/framework/misc/update/update.xml";
-
-		if(file_exists($latestUpdateXml)) {
+		clearstatcache();
+		if(file_exists($latestUpdateXml) || $this->file_contents_exist($latestUpdateXml)) {
 			try {
 				$contents = file_get_contents($latestUpdateXml);
 				file_put_contents($ourUpdateXml, $contents);
@@ -255,6 +258,19 @@ class CaskmasterUpdateManager {
 		}
 
 
+	}
+
+	public function file_contents_exist($url, $response_code = 200) {
+    	$headers = get_headers($url);
+
+	    if (substr($headers[0], 9, 3) == $response_code)
+	    {
+	        return TRUE;
+	    }
+	    else
+	    {
+	        return FALSE;
+	    }
 	}
 
 }
