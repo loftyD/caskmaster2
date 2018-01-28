@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<caskmaster target_version="2.20">
+<caskmaster target_version="2.30">
 	<step id="1">
-		<command>UPDATE #caskmaster.version# TO #2.20#</command>
+		<command>UPDATE #caskmaster.version# TO #2.30#</command>
 		<description>Update Your Caskmaster Config File</description>
 	</step>
 	<step id="2" last="true">
-		<command>CHECKOUT @2.20@</command>
+		<command>CHECKOUT @2.30@</command>
 		<description>Update Your Caskmaster Instance</description>
 	</step>
 </caskmaster>
