@@ -33,7 +33,7 @@ class Barrel {
 	private static function getDbInstance() {
 		$dsn = $_SERVER['app']->get("db.vendor") . ':host=' . $_SERVER['app']->get("db.host") . ';dbname=' . $_SERVER['app']->get("db.name");
 		$db = new \PDO($dsn,$_SERVER['app']->get("db.user"),$_SERVER['app']->get("db.password"), array(
-			PDO::ATTR_PERSISTENT => true,
+			\PDO::ATTR_PERSISTENT => true,
 			)
 		);
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -47,13 +47,14 @@ class Barrel {
 	 * @return [type] [description]
 	 */
 	public static function fetchLatestVersion() {
+	
 		$db = self::getDbInstance();
 		if($_SERVER['SERVER_NAME'] == "getcaskmaster.com") {
 			$sql = "SELECT version FROM caskmaster_versions where latest_version = 1";
 			$stmt = $db->prepare($sql);
-			$result = $stmt->execute();
+			$stmt->execute();
 			$stmt->setFetchMode(\PDO::FETCH_OBJ);
-			$version = $result->fetch();
+			$version = $stmt->fetch();
 			return $version->version;
 		} else {
 			throw new \components\exception\HttpException("Cannot call fetchLatestVersion() on this install.");
