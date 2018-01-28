@@ -61,8 +61,13 @@ class SiteController extends Controller {
 
 	public function actionVersion() {
 		$this->init();
+		if(empty($_GET['my_version'])) {
+			$version = \components\Barrel::fetchLatestVersion();
+		} else {
+			$version = (float) $_GET['my_version'];
+		}
 			if($_SERVER['SERVER_NAME'] == "getcaskmaster.com") {
-				echo json_encode(array("version" => \components\Barrel::fetchLatestVersion()));
+				echo json_encode(array("version" => \components\Barrel::findCorrectUpgradePath($version)));
 
 			} else {
 				echo \components\Barrel::getLatestVersion();
