@@ -11,7 +11,8 @@ class Barrel {
 			return reset($version);
 		} else {
 			if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
-				return json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
+				$version = json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
+				return reset($version);
 			}
 			$url = "http://getcaskmaster.com/v";
 			$version = json_decode(file_get_contents($url));
