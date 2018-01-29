@@ -17,6 +17,10 @@ class EntityFactory {
 		$this->entityTable = $entityTable;
 	}
 
+	/**
+	 * Sets up pdo instance
+	 * @return PDO
+	 */
 	public function init(){
 		$dsn = $_SERVER['app']->get("db.vendor") . ':host=' . $_SERVER['app']->get("db.host") . ';dbname=' . $_SERVER['app']->get("db.name");
 		$this->db = new \PDO($dsn,$_SERVER['app']->get("db.user"),$_SERVER['app']->get("db.password"), array(
@@ -25,6 +29,11 @@ class EntityFactory {
 		);
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	}
+
+	/**
+	 * creates a model based on table name
+	 * @return Model
+	 */
 	public function create() {
 		$sql = "SELECT * FROM entity_factory WHERE `table` = :table and status = 'active' ";
 		$statement = $this->db->prepare($sql);
@@ -40,6 +49,10 @@ class EntityFactory {
 		return new $class;
 	}
 
+	/**
+	 * creates a model based on class name
+	 * @return Model
+	 */
 	public function createFromClass() {
 		$sql = "SELECT * FROM entity_factory WHERE `class` = :table and status = 'active' ";
 		$statement = $this->db->prepare($sql);
@@ -57,6 +70,10 @@ class EntityFactory {
 		return new $class;
 	}
 
+	/**
+	 * creates a model based on primary key name
+	 * @return Model
+	 */
 	public function createFromPrimaryKey() {
 		$sql = "SELECT * FROM entity_factory WHERE `primary_key_field` = :table and status = 'active' ";
 		$statement = $this->db->prepare($sql);
@@ -74,6 +91,10 @@ class EntityFactory {
 		return new $class;
 	}
 
+	/**
+	 * Returns an object containg information regarding the entity.
+	 * @return object
+	 */
 	public function getEntityInfoById($id) {
 		$sql = "SELECT * FROM entity_factory WHERE `entity_factory_id` = :id and status = 'active' ";
 		$statement = $this->db->prepare($sql);

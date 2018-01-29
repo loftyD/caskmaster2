@@ -13,6 +13,10 @@ class CaskmasterUpdateManager {
 	protected $update;
 	private   $target_version;
 
+	/**
+	 * Constructor for this Component.
+	 * @param boolean $runChecks When instantiated, shall we do some checks before we are ready to use?
+	 */
 	public function __construct($runChecks=true) {
 		if($runChecks) {
 
@@ -40,6 +44,10 @@ class CaskmasterUpdateManager {
 
 	}
 
+	/**
+	 * Displays to the end user the necessary steps that the upgrade will do.
+	 * @return string The HTML to be rendered on screen.
+	 */
 	public function displayUpgradeSteps() {
 		if(empty($this->update['target_version'])) {
 			throw new HttpException("XML Error: The property target_version is not defined.");
@@ -63,7 +71,12 @@ class CaskmasterUpdateManager {
 		return $html;
 	}
 
-
+	/**
+	 * Navigates through the supplied XML file and displays the steps in an
+	 * easy to read format.
+	 * @param  boolean $runUpgrade Actually does the upgrade if set to true.
+	 * @return string  The HTML to be rendered on screen.
+	 */
 	private function loopThroughSteps($runUpgrade=false) {
 		$html = "<div class='well'>";
 		foreach($this->update as $step) {
@@ -117,6 +130,13 @@ class CaskmasterUpdateManager {
 		return $html;
 	}
 
+	/**
+	 * Certain steps may involve a code deployment or a config change
+	 * This method identifies what the step is doing.
+	 * @param  string $str  The given step
+	 * @param  string $type the type of step
+	 * @return string       The filtered command
+	 */
 	private function returnKeyWordsFromCommand($str, $type) {
 		if($type == "config")
 			$result = $this->getStringBetween($str,"#", "#");
@@ -127,6 +147,13 @@ class CaskmasterUpdateManager {
 
 	}
 
+	/**
+	 * Gets text between characters
+	 * @param  string $string the given text
+	 * @param  string $start  start character
+	 * @param  string $end    end character
+	 * @return string         
+	 */
 	private function getStringBetween($string, $start, $end){
 	    $string = ' ' . $string;
 	    $ini = strpos($string, $start);
@@ -136,6 +163,11 @@ class CaskmasterUpdateManager {
 	    return substr($string, $ini, $len);
 	}
 
+	/**
+	 * This handles the code deployment. This does not execute any SQL
+	 * @param  string $branch The chosen branch to checkout
+	 * @return boolean        True if the checkout went OK.
+	 */
 	private function checkoutBranch($branch) {
 		$repoLocation = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/update/repo';
 
@@ -170,6 +202,13 @@ class CaskmasterUpdateManager {
 		
 	}
 
+	/**
+	 * PHP really doesn't like deleting directories with files in.
+	 * This clears out a given directory. This method has a safety mechanism,
+	 * so if one doesn't supply a directory, it will return false immediately.
+	 * @param  string $dir the directory to remove files and folder sfrom.
+	 * @return boolean False if fails.
+	 */
 	private function deleteResource($dir) {
 
 	    if (empty($dir)) { 
@@ -191,6 +230,11 @@ class CaskmasterUpdateManager {
   		}
 	}
 
+	/**
+	 * Again, PHP's native copy is not up to par...
+	 * @param  [type] $source The source directory
+	 * @param  [type] $target The target directory
+	 */
 	private function copy($source, $target) {
         if (!is_dir($source)) {//it is a file, do a normal copy
             copy($source, $target);
@@ -215,6 +259,15 @@ class CaskmasterUpdateManager {
         $d->close();
     }
 
+    /**
+     * Updates your config.php file
+     * NB: Seriously looking at turning the non essential config to
+     * database. a simple query will be sufficient for this method rather
+     * than this mess.
+     * @param  string $option The option
+     * @param  string $value  The new value
+     * @return boolean True if successful.
+     */
     private function updateConfig($option,$value) {
 
     	$configLocation = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/config/config.php';
@@ -237,10 +290,24 @@ class CaskmasterUpdateManager {
 		return true;
     }
 
+    /**
+     * Syntactic sugar for the horrific condition it evaluates.
+     * NB: When the config is converted over to database, this will either
+     * be gone or moved into \components\Barrel
+     * @param  string $needle   Needle
+     * @param  string $haystack Haystack
+     * @return boolean           true if contains
+     */
     private function contains($needle, $haystack) {
     	return strpos($haystack, $needle) !== false;
 	}
 
+	/**
+	 * Effectively does a checkout of the next release's
+	 * update.xml which contains the necessary steps to upgrade.
+	 * @param  string $branch The branch in question to obtain update.xml
+	 * @return boolean	True if successful.
+	 */
 	public function fetchLatestUpdateXml($branch="master") {
 		$latestUpdateXml = "https://raw.githubusercontent.com/loftyd/caskmaster2/$branch/framework/misc/update/update.xml";
 		$ourUpdateXml = $configLocation = $_SERVER['DOCUMENT_ROOT'] . "/framework/misc/update/update.xml";
@@ -260,6 +327,13 @@ class CaskmasterUpdateManager {
 
 	}
 
+	/**
+	 * file_exists() was having a bad day, the path to update.xml
+	 * also goes through this method to see if we get a 200 response code.
+	 * @param  string  $url           the resource
+	 * @param  integer $response_code the response code to check for.
+	 * @return boolean true if successful
+	 */
 	public function file_contents_exist($url, $response_code = 200) {
     	$headers = get_headers($url);
 

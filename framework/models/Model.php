@@ -113,16 +113,6 @@ abstract class Model {
 	}
 
 	/**
-	 * Sets the model's applicable attributes
-	 * @param array $attributes
-	 */
-	protected function setModelAttributes($attributes) {
-		foreach($attributes as $attribute) {
-			$this->fields[$attribute] = $attribute;
-		}
-	}
-
-	/**
 	 * Returns the model's applicable attributes
 	 * @return array
 	 */
@@ -167,6 +157,17 @@ abstract class Model {
 
 	}
 
+	/**
+	 * Fetches related records for a model.
+	 * @param  string  $identifier              The relation data will be stored and accessed under this property
+	 * @param  string  $targetModel             The class name of the corresponding model in which to bring back records.
+	 * @param  string  $throughModel            Used if the relation data you need is in a join table.
+	 * @param  string  $field                   If you wish to use a different field for the WHERE statement.
+	 * @param  string  $condition               An optional condition or conditions which you can pass in.
+	 * @param  boolean $findOne                 Whether to return one record or all records that it finds.
+	 * @param  string  $matchingForeignKeyField If the primary keys for the two models are not the same, you can override it here.
+	 * @return Model                            Results from the relation.
+	 */
 	public function getRelated($identifier, $targetModel, $throughModel = null, $field = null, $condition = null, $findOne = true, $matchingForeignKeyField=null) {
 
 		if(!empty($this->{$identifier})) {
@@ -287,6 +288,12 @@ abstract class Model {
 		return $this->{$identifier};
 	}
 
+	/**
+	 * Executes sql and returns results.
+	 * @param  string $sql    The SQL
+	 * @param  array  $params An array of parameters for the sql.
+	 * @return Model         The results.
+	 */
 	public function executeSql($sql,$params=array()) {
 		$statement = $this->db->prepare($sql);
 		$statement->execute($params);
@@ -303,10 +310,21 @@ abstract class Model {
 		return $result;
 	}
 
+	/**
+	 * If you want a model to use relations, then define your relations in this method. 
+	 * See models\User for an example.
+	 * @param  Model  $resource The model instance
+	 * @return boolean	This method should return true if a model is using relations
+	 */
 	public function loadRelations(Model $resource) {
 		return false;
 	}
 
+	/**
+	 * This is called by the constructor or when using findByPk() or other similar methods.
+	 * This will instantiate the relations for this model.
+	 * @return [type] [description]
+	 */
 	final public function loadConstructedRelations() {
 		if(isset($this->{$this->primary_key})) {
 			$this->loadRelations($this);
@@ -316,6 +334,11 @@ abstract class Model {
 		}
 	}
 
+	/**
+	 * This method splits an aliased field into the alias and field name, and returns an array.
+	 * @param  string $str the field in question.
+	 * @return array     array
+	 */
 	public function returnAlias($str) {
 		$str = str_replace("`","",$str);
 		$data = explode(".",$str);
@@ -330,6 +353,12 @@ abstract class Model {
 		return $r;
 	}
 
+	/**
+	 * Returns 1 record via a match of given attributes and values. 
+	 * @param  array  $attribs   An array containing matching fields and values.
+	 * @param  string $condition An optional condition for this query.
+	 * @return Model            A model with 1 result and any associated relation data.
+	 */
 	public function findByAttributes($attribs=array(),$condition=null) {
 		if(empty($attribs)) {
 			throw new \Exception(get_class($this) . "::findByAttributes() must define an array");

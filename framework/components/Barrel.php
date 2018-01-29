@@ -3,6 +3,10 @@
 namespace components;
 class Barrel {
 
+	/**
+	 * Returns the latest up-to-date version of Caskmaster
+	 * @return boolean
+	 */
 	public static function getLatestVersion() {
 		if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
 			$version = json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
@@ -28,6 +32,10 @@ class Barrel {
 		return reset($version);
 	}
 
+	/**
+	 * Returns session data for logged in user.
+	 * @return Model user session data
+	 */
 	public static function returnLatestSessionData() {
 		$uid = $_SESSION['uid'];
 		if($_SERVER['app']->redis()->exists("user_data_$uid")) {
@@ -41,6 +49,10 @@ class Barrel {
 		}
 	}
 
+	/**
+	 * Returns a PDO instance
+	 * @return PDO PDO Instance
+	 */
 	private static function getDbInstance() {
 		$dsn = $_SERVER['app']->get("db.vendor") . ':host=' . $_SERVER['app']->get("db.host") . ';dbname=' . $_SERVER['app']->get("db.name");
 		$db = new \PDO($dsn,$_SERVER['app']->get("db.user"),$_SERVER['app']->get("db.password"), array(
@@ -55,7 +67,7 @@ class Barrel {
 	 * Do not call this method. This is used by getcaskmaster.com. This will
 	 * throw an Exception if you are trying to use this on your install.
 	 * 
-	 * @return [type] [description]
+	 * @return float version number
 	 */
 	public static function fetchLatestVersion() {
 	
@@ -73,6 +85,12 @@ class Barrel {
 		}
 	}
 
+	/**
+	 * Returns the correct upgrade path for 
+	 * CaskmasterUpdateManager to fetch the update.xml file.
+	 * @param  string $my_version this Caskmaster instance version
+	 * @return mixed Returns false if this method is run on your install.
+	 */
 	public static function findCorrectUpgradePath($my_version) {
 
 		$db = self::getDbInstance();
