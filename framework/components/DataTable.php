@@ -15,37 +15,71 @@ class DataTable {
 	protected $col;
 	protected $_dataTableEnable = null;
 
+	/**
+	 * Sets the title of this table
+	 * @param string $header
+	 */
 	public function setTableHeader($header)
 	{
 		$this->_header = $header;
 		return $this;
 	}
 
+	/**
+	 * Set the contents of this table
+	 * @param array $array
+	 */
 	public function setTableContents($array)
 	{
 		$this->_result = $array;
 		return $this;
 	}
+
+	/**
+	 * Whether to include DataTable search and sort functionality
+	 */
 	public function isDataTable()
 	{
 		$this->_dataTableEnable = true;
 		return $this;
 	}
+
+	/**
+	 * Hides the primary key field from the result set, but also uses
+	 * the value of this field to help form the contents of the setRowClickLink method
+	 * @param string $value
+	 */
 	public function setPrimaryKeyField($value)
 	{
 		$this->_pkCol = $value;
 		return $this;
 	}
+
+	/**
+	 * Set the row click link of every row.
+	 * @param string $link
+	 */
 	public function setRowClickLink($link)
 	{
 		$this->_path = $link;
 	}
+	/**
+	 * Evaluates an expression and the table row highlights to a colour
+	 * of your choice
+	 * @param string $cond      A PHP expression which evaluates to true (At the moment only double equals conditions are supported).
+	 * @param [type] $highlight A chosen colour in hexadecimal notation to highlight.
+	 */
 	public function setConditionToHighlight($cond,$highlight)
 	{
 		$this->_cond = $cond;
 		$this->_highlight = $highlight;
 	}
 
+	/**
+	 * Defines a group of columns or 1 column to be hidden from
+	 * the rendered table
+	 * @param mixed $col An array of column names or string of a column name
+	 */
 	public function setCellHidden($col)
 	{
 		if(is_array($col)) {
@@ -58,6 +92,11 @@ class DataTable {
 		return $this;
 	}
 	
+	/**
+	 * Evaluates the condition and highlights the cell.
+	 * @param  string $value
+	 * @return string
+	 */
 	protected function _processCondition($value)
 	{
 
@@ -77,6 +116,11 @@ class DataTable {
 		return false;
 	}
 
+	/**
+	 * Hides the cell
+	 * @param  string $col
+	 * @return mixed
+	 */
 	protected function _evaluateCell($col)
 	{
 		if(is_null($this->col) || empty($this->col))
@@ -86,6 +130,10 @@ class DataTable {
 		return false;
 	}
 
+	/**
+	 * Renders Table
+	 * @return string html for this table
+	 */
 	public function generate()
 	{
 		$result = (array)$this->_result;

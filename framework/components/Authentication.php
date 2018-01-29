@@ -21,6 +21,12 @@ class Authentication {
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	}
 
+	/**
+	 * Logs in the user
+	 * @param  string $username username
+	 * @param  string $password password
+	 * @return boolean true if successful login
+	 */
 	public function login($username,$password) {
 		$user = new User;
 		$data = $user->findByAttributes(array(
@@ -39,6 +45,11 @@ class Authentication {
 		}
 	}
 
+	/**
+	 * Hashes text
+	 * @param  string $str text to hash
+	 * @return string      hashed text
+	 */
 	public function hash($str) {
 		$options = [
     		'cost' => 10,
@@ -47,6 +58,12 @@ class Authentication {
 		return $hash;
 	}
 
+	/**
+	 * Verifys given hash
+	 * @param  string $str  plaintext
+	 * @param  string $hash plaintext hashed
+	 * @return boolean       true if valid hash
+	 */
 	public function verifyHash($str,$hash) {
 		if(\password_verify($str, $hash)) {
 			return true;
@@ -55,6 +72,9 @@ class Authentication {
 		}
 	}
 
+	/**
+	 * Logs out user
+	 */
 	public function logout() {
 		unset($_SESSION);
 		session_destroy();
