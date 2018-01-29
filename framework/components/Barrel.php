@@ -53,7 +53,7 @@ class Barrel {
 	 * Returns a PDO instance
 	 * @return PDO PDO Instance
 	 */
-	private static function getDbInstance() {
+	public static function getDbInstance() {
 		$dsn = $_SERVER['app']->get("db.vendor") . ':host=' . $_SERVER['app']->get("db.host") . ';dbname=' . $_SERVER['app']->get("db.name");
 		$db = new \PDO($dsn,$_SERVER['app']->get("db.user"),$_SERVER['app']->get("db.password"), array(
 			\PDO::ATTR_PERSISTENT => true,

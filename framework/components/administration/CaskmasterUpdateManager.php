@@ -260,47 +260,14 @@ class CaskmasterUpdateManager {
     }
 
     /**
-     * Updates your config.php file
-     * NB: Seriously looking at turning the non essential config to
-     * database. a simple query will be sufficient for this method rather
-     * than this mess.
+     * Updates your options table
      * @param  string $option The option
      * @param  string $value  The new value
      * @return boolean True if successful.
      */
     private function updateConfig($option,$value) {
-
-    	$configLocation = $_SERVER['DOCUMENT_ROOT'] . '/framework/misc/config/config.php';
-    	$replaceString = '$app->set("'. $option . '",';
-
-    	$file = file($configLocation);
-		$Lines = array();
-		foreach($file as $line) {
-			if($this->contains($replaceString,$line)) {
-				$replace = str_replace($_SERVER['app']->get($option), $value, $line);
-				$Lines[] = $replace;
-			} else {
-				$Lines[] = $line;
-			}
-		}
-
-		$NewContent = implode("", $Lines);
-
-		file_put_contents($configLocation, $NewContent);
-		return true;
+    	return $_SERVER['app']->options->set($option,$value);
     }
-
-    /**
-     * Syntactic sugar for the horrific condition it evaluates.
-     * NB: When the config is converted over to database, this will either
-     * be gone or moved into \components\Barrel
-     * @param  string $needle   Needle
-     * @param  string $haystack Haystack
-     * @return boolean           true if contains
-     */
-    private function contains($needle, $haystack) {
-    	return strpos($haystack, $needle) !== false;
-	}
 
 	/**
 	 * Effectively does a checkout of the next release's
