@@ -1,6 +1,7 @@
 <?php
 
 namespace components;
+use \components\VarDumper;
 class Barrel {
 
 	/**
@@ -11,7 +12,7 @@ class Barrel {
 		if($_SERVER['app']->redis()->exists("caskmaster_latest_version")) {
 			$version = json_decode($_SERVER['app']->redis()->get("caskmaster_latest_version"));
 		} else {
-			$current = $_SERVER['app']->get("caskmaster.version");
+			$current = $_SERVER['app']->options()->get("caskmaster.version");
 			$url = "http://getcaskmaster.com/v?my_version=$current";
 			$version = json_decode(file_get_contents($url));
 			$_SERVER['app']->redis()->set("caskmaster_latest_version", json_encode($version) );
@@ -19,7 +20,9 @@ class Barrel {
 		}
 
 		$latest = $version->version;
-		if($_SERVER['app']->get("caskmaster.version") < $latest) {
+		$current = $_SERVER['app']->options()->get("caskmaster.version");
+
+		if($current < $latest) {
 			$updateManager = new \components\administration\CaskmasterUpdateManager(false);
 			clearstatcache();
 			if($updateManager->fetchLatestUpdateXml($latest) === false) {
@@ -53,7 +56,7 @@ class Barrel {
 	 * Returns a PDO instance
 	 * @return PDO PDO Instance
 	 */
-	public static function getDbInstance() {
+	private static function getDbInstance() {
 		$dsn = $_SERVER['app']->get("db.vendor") . ':host=' . $_SERVER['app']->get("db.host") . ';dbname=' . $_SERVER['app']->get("db.name");
 		$db = new \PDO($dsn,$_SERVER['app']->get("db.user"),$_SERVER['app']->get("db.password"), array(
 			\PDO::ATTR_PERSISTENT => true,

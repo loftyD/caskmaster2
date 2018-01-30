@@ -34,7 +34,7 @@ class CaskmasterUpdateManager {
 
 			$this->update = simplexml_load_file($this->xml);
 
-			$currentVersion = (float) $_SERVER['app']->get("caskmaster.version");
+			$currentVersion = (float) $_SERVER['app']->options()->get("caskmaster.version");
 			$targetVersion =  (float) $this->update['target_version'];
 
 			if($currentVersion == $targetVersion) {
@@ -60,7 +60,7 @@ class CaskmasterUpdateManager {
 		$this->target_version = $this->update['target_version'];
 
 		$html = "";
-		$currentVersion = $_SERVER['app']->get("caskmaster.version");
+		$currentVersion = $_SERVER['app']->options()->get("caskmaster.version");
 		$html = "<h2>Update Caskmaster From Version " . $currentVersion . " to " .$this->target_version . "</h2>";
 		$html .= $this->loopThroughSteps($runUpgrade);
 		if(!$runUpgrade) {

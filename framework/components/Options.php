@@ -43,15 +43,13 @@ class Options {
 
 		$sql = "UPDATE `options` SET `value` = :value WHERE `option` = :option";
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(
+		$result = $stmt->execute(array(
 			":option" => $option,
 			":value"  => $value,
 			)
 		);
-		$stmt->setFetchMode(\PDO::FETCH_OBJ);
-		$result = $stmt->fetch();
-		if(empty($result)) {
-			$result = false;
+		if(!$result) {
+			return false;
 		} 
 		return true;
 	}
