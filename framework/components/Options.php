@@ -36,10 +36,11 @@ class Options {
 		if(empty($result)) {
 			throw new \components\exception\HttpException("The option $option does not exist.");
 		} 
-		return $result->{value};
+		return $result->{'value'};
 	}
 
 	public function set($option,$value) {
+
 		$sql = "UPDATE `options` SET `value` = :value WHERE `option` = :option";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(
