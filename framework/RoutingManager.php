@@ -7,6 +7,7 @@ include "autoload.php";
 include "misc/config/config.php";
 
 // store our Flight instance into a superglobal. This can then be used in other classes
+$app->set("caskmaster.version", $app->options()->get("caskmaster.version"));
 $_SERVER['app'] = $app;
 
 

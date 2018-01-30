@@ -13,4 +13,4 @@ CREATE TABLE `options` (
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
 
-INSERT INTO `options` (`option`, `value`) VALUES ('caskmaster_version', '2.30');
+INSERT INTO `options` (`option`, `value`) VALUES ('caskmaster.version', '2.30');

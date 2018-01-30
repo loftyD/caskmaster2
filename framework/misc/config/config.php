@@ -14,7 +14,6 @@ $app = new Engine();
 	$app->set("flight.log_errors", true);
 	$app->set("flight.views.path",$_SERVER['DOCUMENT_ROOT'] . "/framework/views");
 	$app->set("caskmaster.environment","production");
-	$app->set("caskmaster.version",new (\components\Options)->get("caskmaster.version"));
 	$app->set("redis.host","127.0.0.1");
 	$app->set("redis.port", 6379);
 
