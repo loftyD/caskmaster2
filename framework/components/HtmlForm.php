@@ -80,7 +80,7 @@ class HtmlForm {
 		$html .= $this->getFormString("begin");
 		foreach($this->fields as $fieldName => $fieldClass) {
 			$class = "\\components\\fields\\$fieldClass";
-			$field = new $class($fieldName, $this->preserveValues);
+			$field = new $class($fieldName);
 			$html.= $field->render();
 		}
 
@@ -97,7 +97,7 @@ class HtmlForm {
 
 		foreach($this->fields as $fieldName => $fieldClass) {
 			$class = "\\components\\fields\\$fieldClass";
-			$field = new $class($fieldName, $this->preserveValues);
+			$field = new $class($fieldName, array("preserveValues" => true));
 
 			if($field->validate() === false) {
 				return false;
@@ -105,5 +105,26 @@ class HtmlForm {
 		}
 
 		return true;
+	}
+
+
+	public function renderDynamicForm(\models\DynamicForm $dynamicForm) {
+		$html = "";
+		$html.="<h1>" . $dynamicForm->sections[0]->name . "</h1>";
+		$html .= $this->getFormString("begin");
+		$section = $dynamicForm->sections[0];
+		foreach($section->fields as $field) {
+			foreach($field->properties as $property) {
+				$thisFieldProperties[$property->option] = $property->value;
+			}
+			
+			$class = "\\components\\fields\\" . $thisFieldProperties['fieldType'];
+			$field = new $class($field->field, $thisFieldProperties);
+			$html.= $field->render();
+			unset($thisFieldProperties);
+		}
+		$html .= "<br /><input type=\"submit\" class=\"btn btn-primary\" name='btn' value=\"Submit\">";
+		$html .= $this->getFormString("end");
+		return $html;
 	}
 }

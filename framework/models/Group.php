@@ -13,7 +13,7 @@ class Group extends Model {
 		}
 
 		if(empty($resource->operations)) {
-			$resource->getRelated("operations","Operation","GroupOperation","group_operations.group_id", null, false);
+			$resource->getRelated("operations","GroupOperation","Operation",null,null, null, false);
 		}
 		
 		return true;

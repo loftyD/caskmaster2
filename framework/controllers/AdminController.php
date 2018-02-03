@@ -31,6 +31,8 @@ class AdminController extends Controller {
 			$this->actionLogout();
 		} elseif($page == "update") {
 			$this->actionUpdate();
+		} elseif($page == "form") {
+			$this->actionTest();
 		} else {
 			$this->router->notFound();
 		}
@@ -63,5 +65,15 @@ class AdminController extends Controller {
 	protected function actionUpdate() {
 		$updateManager = new \components\administration\CaskmasterUpdateManager();
 		$this->router->render("admin/update", array("update" => $updateManager->displayUpgradeSteps()));
+	}
+
+	protected function actionTest() {
+		
+		$dynamicForm = (new \models\DynamicForm())->getMainForm('User');
+		$htmlForm = new \components\HtmlForm("UserDB","POST","/admin/form");
+		echo "<div class=\"container\">";
+			echo $htmlForm->renderDynamicForm($dynamicForm);
+		echo "</div>";
+
 	}
 }

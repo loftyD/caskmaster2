@@ -6,7 +6,6 @@
 namespace components\fields;
 class DateField extends BaseField {
 
-	protected $label = "Date of Birth";
 	protected $javaScript = "<script>
 	$( function() {
 		$('.datepicker').datepicker({
@@ -22,7 +21,7 @@ class DateField extends BaseField {
 	}
 
 	public function validate() {
-		if(empty($this->value)) {
+		if(parent::validate() == false) {
 			return false;
 		} elseif(\DateTime::createFromFormat('Y-m-d', $this->value) === false) {
 			return false;

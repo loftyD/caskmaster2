@@ -74,12 +74,18 @@ class EntityFactory {
 	 * creates a model based on primary key name
 	 * @return Model
 	 */
-	public function createFromPrimaryKey() {
-		$sql = "SELECT * FROM entity_factory WHERE `primary_key_field` = :table and status = 'active' ";
+	public function createFromPrimaryKey($useClass=false) {
+		if($useClass) {
+			$sql = "SELECT * FROM entity_factory WHERE FIND_IN_SET(:table,`primary_key_field`) and `class` = :class and status = 'active' ";
+		} else {
+			$sql = "SELECT * FROM entity_factory WHERE FIND_IN_SET(:table,`primary_key_field`) and status = 'active' ";
+		}
 		$statement = $this->db->prepare($sql);
 		$statement->execute(array(
 			':table' => $this->entityTable,
+			':class' => $useClass,
 		));
+
 		$result = $statement->fetch();
 		if(empty($result)) {
 			throw new \Exception("Entity must exist in entity_factory");

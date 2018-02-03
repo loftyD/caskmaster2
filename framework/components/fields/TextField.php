@@ -11,13 +11,4 @@ class TextField extends BaseField {
 		$html .= "<input type=\"text\" name=\"$this->name\" id=\"field_$this->name\" class=\"form-control\" ". $this->setApplicableValue() . "/>";
 		return $html;
 	}
-
-	public function validate() {
-		if(empty($this->value))
-		{
-			return false;
-		}
-
-		return true;
-	}
 }

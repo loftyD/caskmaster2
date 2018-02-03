@@ -9,10 +9,8 @@ use flight\Engine;
 use components\EntityFactory;
 
 abstract class Model {
-	protected $primary_key, $table_name;
+	protected $primary_key, $table_name, $name_field;
 	protected $db;
-	protected $fields;
-	protected $instance;
 
 	const STATUS_ACTIVE = 'active';
 	const STATUS_DISABLED = 'disabled';
@@ -49,7 +47,7 @@ abstract class Model {
 	 */
 	final protected function getModelProperties() {
 
-		$sql = "SELECT primary_key_field, `table` FROM entity_factory where `class` = :class;";
+		$sql = "SELECT primary_key_field, `table`,`name_field` FROM entity_factory where `class` = :class;";
 		$statement = $this->db->prepare($sql);
 		$statement->execute(array(
 			':class' => (new \ReflectionClass($this))->getShortName(),
@@ -70,6 +68,7 @@ abstract class Model {
 			$this->primary_key = $result->primary_key_field;
 		}
 		$this->table_name  = $result->table;
+		$this->name_field  = $result->name_field;
 
 	}
 
@@ -90,7 +89,7 @@ abstract class Model {
 			$result = false;
 		}
 
-		$this->instance = $result;
+		$result->loadConstructedRelations();
 		return $result;
 	}
 
@@ -108,7 +107,7 @@ abstract class Model {
 		if(empty($result)) {
 			$result = false;
 		}
-		$this->instance = $result;
+		$result->loadConstructedRelations();
 		return $result;
 	}
 
@@ -117,7 +116,15 @@ abstract class Model {
 	 * @return array
 	 */
 	public function getModelAttributes() {
-		return $this->fields;
+		
+		$q = $this->db->prepare("DESCRIBE " . $this->table_name);
+		$q->execute();
+		$table_fields = $q->fetchAll(PDO::FETCH_COLUMN);
+		foreach($table_fields as $index => $field) {
+			$this->{$field} = "";
+		}
+
+		return array_flip($table_fields);
 	}
 
 	/**
@@ -185,11 +192,13 @@ abstract class Model {
 		}
 
 		if(!isset($foreignModel)) {
+			$foreignClass = $targetModel;
 			$entityFactory = new EntityFactory($targetModel);
 			$foreignModel = $entityFactory->createFromClass();
 		}
 
 		if($throughModel != null) {
+			$throughClass = $throughModel;
 			$entityFactory = new EntityFactory($throughModel);
 			$throughModel = $entityFactory->createFromClass();
 		}
@@ -220,22 +229,35 @@ abstract class Model {
 		if($throughModel != null) {
 			$splitThroughModelPk = explode(",",$throughModel->primary_key);
 
+			$splitForeignModelPk = explode(",",$foreignModel->primary_key);
+			$splitForeignModelPk = array_flip($splitForeignModelPk);
+
+
+			if(count($splitForeignModelPk) > 1) {
+				$splitThroughModelPk = reset($splitThroughModelPk);
+				$index = $splitForeignModelPk[$splitThroughModelPk];
+				$splitForeignModelPk = array_flip($splitForeignModelPk);
+				$foreignModelPrimaryKey = $splitForeignModelPk[$index];
+			} else {
+				$foreignModelPrimaryKey = $foreignModel->primary_key;
+			}
+
 			if(is_array($splitThroughModelPk) && count ($splitThroughModelPk) > 1) {
 				
 				foreach($splitThroughModelPk as $pk) {
 					$entityFactoryInstance = new EntityFactory($pk);
-					$pk = $entityFactoryInstance->createFromPrimaryKey();
+					$pk = $entityFactoryInstance->createFromPrimaryKey($throughClass);
 					if($pk->table_name == $identifier) {
 						$sql .= " INNER JOIN `" . $throughModel->table_name . "` `" 
 						. $throughModel->table_name . "` ON `" . $throughModel->table_name . "`.`" 
-						. $pk->primary_key . "` = `t`.`" . $foreignModel->primary_key . "` ";
+						. $pk->primary_key . "` = `t`.`" . $foreignModelPrimaryKey . "` ";
 					}
 				}
 
 			} else {			
 				$sql .= " INNER JOIN `" . $throughModel->table_name . "` `" 
 				. $throughModel->table_name . "` ON `" . $throughModel->table_name . "`.`" 
-				. $throughModel->primary_key . "` = `t`.`" . $foreignModel->primary_key . "` ";
+				. $throughModel->primary_key . "` = `t`.`" . $foreignModelPrimaryKey . "` ";
 			}
 			// INNER JOIN `users_auth_status` `users_auth_status` ON `users_auth_status`.`user_id` = `t`.`group_id`
 		}
@@ -294,18 +316,24 @@ abstract class Model {
 	 * @param  array  $params An array of parameters for the sql.
 	 * @return Model         The results.
 	 */
-	public function executeSql($sql,$params=array()) {
+	public function executeSql($sql,$params=array(),$fetchAll=true) {
 		$statement = $this->db->prepare($sql);
 		$statement->execute($params);
 		$statement->setFetchMode(\PDO::FETCH_CLASS|\PDO::FETCH_PROPS_LATE,get_class($this));
-		$result = $statement->fetchAll();
-		$count = count($result);
-		
-		if($count > 0) {
-			foreach((object)$result as $each) {
-				$each->loadConstructedRelations();
+		if($fetchAll) {
+			$result = $statement->fetchAll();
+			$count = count($result);	
+			if($count > 0) {
+				foreach((object)$result as $each) {
+					$each->loadConstructedRelations();
+				}
 			}
 		}
+		else {
+			$result = $statement->fetch();
+			$result->loadConstructedRelations();
+		}
+
 
 		return $result;
 	}
@@ -387,6 +415,48 @@ abstract class Model {
 		$statement->setFetchMode(\PDO::FETCH_CLASS|\PDO::FETCH_PROPS_LATE,get_class($this));
 		$result = $statement->fetch();
 		$result->loadConstructedRelations();
+
+		return $result;
+	}
+
+	/**
+	 * Returns ~ records via a match of given attributes and values. 
+	 * @param  array  $attribs   An array containing matching fields and values.
+	 * @param  string $condition An optional condition for this query.
+	 * @return Model            A model with 1 result and any associated relation data.
+	 */
+	public function findAllByAttributes($attribs=array(),$condition=null) {
+		if(empty($attribs)) {
+			throw new \Exception(get_class($this) . "::findByAttributes() must define an array");
+		}
+
+		$sql = "SELECT * FROM `" . $this->table_name . "` `t` WHERE ";
+		$i = 0;
+		$count = count($attribs);
+		foreach($attribs as $attribute => $value) {
+			$i++;
+			$sql .= "$attribute = :$attribute ";
+			if($count > 1 && $i < $count) 
+				$sql.= "AND ";
+		}
+
+		if($condition != null) {
+			$sql .= " AND $condition";
+		}
+		$statement = $this->db->prepare($sql);
+
+		foreach($attribs as $attribute => $value) {
+			$statement->bindParam(":$attribute", $value);
+		}
+
+		$statement->execute();
+		$statement->setFetchMode(\PDO::FETCH_CLASS|\PDO::FETCH_PROPS_LATE,get_class($this));
+		$result = $statement->fetchAll();
+		if($count > 0) {
+			foreach((object)$result as $each) {
+					$each->loadConstructedRelations();
+			}
+		}
 
 		return $result;
 	}
