@@ -9,6 +9,7 @@ use \components\Barrel;
 class AdminController extends Controller {
 
 	protected $title = "Caskmaster 2.0 :- Admin";
+	protected $showSideMenu = false;
 
 
 	protected function init() {
@@ -68,11 +69,12 @@ class AdminController extends Controller {
 	}
 
 	protected function actionTest() {
-		
+		$user = new \models\User;
+
 		$dynamicForm = (new \models\DynamicForm())->getMainForm('User');
 		$htmlForm = new \components\HtmlForm("UserDB","POST","/admin/form");
 		echo "<div class=\"container\">";
-			echo $htmlForm->renderDynamicForm($dynamicForm);
+			echo $htmlForm->renderDynamicForm($dynamicForm,$user->findByPk(1));
 		echo "</div>";
 
 	}

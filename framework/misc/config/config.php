@@ -21,10 +21,5 @@ $app = new Engine();
 /**
  *	REDIS - Change Config for REDIS above
  */
-	$redisSettings = array(
-	    "host" => $app->get("redis.host"),
-	    "port" => $app->get("redis.port"),
-	    "database" => ($app->get("caskmaster.environment") == "development" ? 15 : 0),
-	);
 
 	require_once("map_classes.php");

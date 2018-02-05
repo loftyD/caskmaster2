@@ -1,5 +1,7 @@
 <?php
 	
+	$sessionProvider = new EasyCSRF\NativeSessionProvider();
+
 	$redisSettings = array(
 	    "host" => $app->get("redis.host"),
 	    "port" => $app->get("redis.port"),
@@ -9,3 +11,4 @@
 	
 	$app->register("redis","Predis\Client", array($redisSettings) );
 	$app->register("options","\components\Options",array($app) );
+	$app->register("csrf","\components\EasyCSRFExtended",array($sessionProvider));

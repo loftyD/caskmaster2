@@ -37,6 +37,8 @@ abstract class BaseField {
 			}
 		}
 
+
+
 		if(empty($this->preserveValues)) {
 			if(!isset($_POST)) {
 				$this->preserveValues = false;
@@ -51,10 +53,18 @@ abstract class BaseField {
 		$this->router = new Engine();
 		if($this->preserveValues) {
 			$this->preserveValues = true;
-			if($this->router->request()->method == 'GET') {
-				$this->value = htmlspecialchars($this->router->request()->query->{$name},ENT_QUOTES,'UTF-8');
+			if(isset($this->{'dynamicFormLoadedModel'})) {
+				if($this->router->request()->method == 'POST') {
+					$this->value = htmlspecialchars($this->router->request()->data->{$name},ENT_QUOTES,'UTF-8');
+				} else {
+					$this->value = htmlspecialchars($this->dynamicFormLoadedModel->{$name},ENT_QUOTES,'UTF-8');
+				}
 			} else {
-				$this->value = htmlspecialchars($this->router->request()->data->{$name},ENT_QUOTES,'UTF-8');
+				if($this->router->request()->method == 'GET') {
+					$this->value = htmlspecialchars($this->router->request()->query->{$name},ENT_QUOTES,'UTF-8');
+				} else {
+					$this->value = htmlspecialchars($this->router->request()->data->{$name},ENT_QUOTES,'UTF-8');
+				}
 			}
 		}
 

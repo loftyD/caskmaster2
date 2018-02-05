@@ -4,6 +4,7 @@
  *  Controller::init() view
  */
 ?>
+<!DOCTYPE HTML>
 <html>
 <head>
 <title>Caskmaster Error</title>
@@ -27,23 +28,38 @@
 <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
 <script src="/js/plugins.js"></script>
 
 </head>
 <body>
-<nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">Caskmaster Error</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-        </div><!--/.navbar-collapse -->
-      </div>
+    <div class="wrap">
+
+  <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Caskmaster Error</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            <?php if(isset($_SESSION['username'])) { ?>
+              <li><a href="/admin/logout">Logout</a></li>
+            <?php } ?>
+            <?php if(!isset($_SESSION['username'])) { ?>
+              <li><a href="/login">Login</a></li>
+            <?php } ?>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
     </nav>
+
+      <div class="col-lg-12 center-block">
+        <div class="container">

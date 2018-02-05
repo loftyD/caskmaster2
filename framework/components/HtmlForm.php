@@ -12,6 +12,7 @@ class HtmlForm {
 	private $form   = array();
 	public $preserveValues = false;
 	protected $router;
+	protected $csrf=true;
 
 	/**
 	 * @param string $name The Name of this form. This will be displayed in an <h1> element.
@@ -84,6 +85,10 @@ class HtmlForm {
 			$html.= $field->render();
 		}
 
+		if($this->csrf) {
+			$token = $_SERVER['app']->csrf()->generate('CM2FormToken');
+			$html .= "<input type=\"hidden\" name=\"token\" value=\"$token\" />"; 
+		}
 		$html .= "<br /><input type=\"submit\" class=\"btn btn-primary\" name='btn' value=\"Submit\">";
 		$html .= $this->getFormString("end");
 		return $html;
@@ -94,7 +99,15 @@ class HtmlForm {
 	 * @return boolean true if all fields passed validation
 	 */
 	public function validateFields() {
-
+		if($this->csrf) {
+			try {
+    			$_SERVER['app']->csrf()->check('CM2FormToken', $_POST['token'],600);
+			} catch(Exception $e) {
+				$_SERVER['app']->map('error', function(Exception $e) {
+    				throw new \components\CsrfHttpException($e->getMessage());
+    			});
+			}
+		}
 		foreach($this->fields as $fieldName => $fieldClass) {
 			$class = "\\components\\fields\\$fieldClass";
 			$field = new $class($fieldName, array("preserveValues" => true));
@@ -108,7 +121,15 @@ class HtmlForm {
 	}
 
 
-	public function renderDynamicForm(\models\DynamicForm $dynamicForm) {
+	public function renderDynamicForm(\models\DynamicForm $dynamicForm, $instance=null) {
+		$instanceInUse = false;
+
+		if($instance != null && !$instance instanceof \models\Model) {
+			throw new \Exception("You must supply a model for this dynamic form.");
+		} else {
+			$instanceInUse = true;
+		}
+
 		$html = "";
 		$html.="<h1>" . $dynamicForm->sections[0]->name . "</h1>";
 		$html .= $this->getFormString("begin");
@@ -117,12 +138,17 @@ class HtmlForm {
 			foreach($field->properties as $property) {
 				$thisFieldProperties[$property->option] = $property->value;
 			}
-			
+			if($instanceInUse) {
+				$thisFieldProperties["dynamicFormLoadedModel"] = $instance;
+				$thisFieldProperties["preserveValues"] = true;
+			}
 			$class = "\\components\\fields\\" . $thisFieldProperties['fieldType'];
 			$field = new $class($field->field, $thisFieldProperties);
 			$html.= $field->render();
 			unset($thisFieldProperties);
 		}
+		$token = $_SERVER['app']->csrf()->generate('CM2FormToken');
+		$html .= "<input type=\"hidden\" name=\"token\" value=\"$token\" />"; 
 		$html .= "<br /><input type=\"submit\" class=\"btn btn-primary\" name='btn' value=\"Submit\">";
 		$html .= $this->getFormString("end");
 		return $html;
