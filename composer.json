@@ -1,5 +1,7 @@
 {
-  "require": {
- "predis/predis": "^1.1",
-    "czproject/git-php": "^3.10" }
+   	"require": {
+   		"predis/predis": "^1.1",
+    	"czproject/git-php": "^3.10",
+    	"gilbitron/easycsrf": "^1.0"
+	}
 }
